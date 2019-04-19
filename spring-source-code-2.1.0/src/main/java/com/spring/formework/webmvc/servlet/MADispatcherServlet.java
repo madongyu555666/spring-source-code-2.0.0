@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -210,9 +211,47 @@ public class MADispatcherServlet extends HttpServlet {
 
 
     private void doDispatch(HttpServletRequest req, HttpServletResponse resp) throws Exception{
+        //根据用户请求的URL 来获得一个Handler
+        MAHandlerMapping handler = getHandler(req);
+
+        if(handler==null){
+            //等于空就报个404的模板页面
+            processDispatchResult(req,resp,new MAModelAndView("404"));
+        }
+
+    }
+
+    /**
+     * 返回固定视图模板
+     * @param req
+     * @param resp
+     * @param mv
+     */
+    private void processDispatchResult(HttpServletRequest req, HttpServletResponse resp, MAModelAndView mv) {
+        //把给我的ModleAndView变成一个HTML、OuputStream、json、freemark、veolcity
+        //ContextType
+        if(null == mv){return;}
+
+
     }
 
 
+    private MAHandlerMapping getHandler(HttpServletRequest req) {
+        if(this.handlerMappings.isEmpty()){
+            return null;
+        }
+        String url=req.getContextPath();
+        String contextPath=req.getContextPath();
+        //截取请求的url
+        url = url.replace(contextPath,"").replaceAll("/+","/");
+        //遍历handlerMappings
+        for (MAHandlerMapping handler : this.handlerMappings) {
+            Matcher matcher=handler.getPattern().matcher(url);
+            if(!matcher.matches()){continue;}
+            return  handler;
+        }
+        return  null;
+    }
 
 
     private void initThemeResolver(MAApplicationContext context) {
