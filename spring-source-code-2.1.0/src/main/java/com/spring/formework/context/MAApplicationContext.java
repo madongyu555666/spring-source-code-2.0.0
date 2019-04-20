@@ -3,6 +3,11 @@ package com.spring.formework.context;
 import com.spring.formework.annotation.MAAutowired;
 import com.spring.formework.annotation.MAController;
 import com.spring.formework.annotation.MAService;
+import com.spring.formework.aop.MAAopProxy;
+import com.spring.formework.aop.MACglibAopProxy;
+import com.spring.formework.aop.MAJdkDynamicAopProxy;
+import com.spring.formework.aop.config.MAAopConfig;
+import com.spring.formework.aop.support.MAAdvisedSupport;
 import com.spring.formework.beans.MABeanWrapper;
 import com.spring.formework.beans.config.MABeanDefinition;
 import com.spring.formework.beans.config.MABeanPostProcessor;
@@ -25,7 +30,8 @@ public class MAApplicationContext extends MADefaultListableBeanFactory implement
     private String [] configLoactions;
     private MABeanDefinitionReader reader;
     //单例的IOC容器缓存
-    private Map<String,Object> singletonObjects = new ConcurrentHashMap<String, Object>();
+    //private Map<String,Object> singletonObjects = new ConcurrentHashMap<String, Object>();//单例的IOC容器缓存
+    private Map<String,Object> factoryBeanObjectCache = new ConcurrentHashMap<String, Object>();
     //通用的IOC容器
     private Map<String,MABeanWrapper> factoryBeanInstanceCache = new ConcurrentHashMap<String, MABeanWrapper>();
 
@@ -128,20 +134,65 @@ public class MAApplicationContext extends MADefaultListableBeanFactory implement
         Object instance = null;
         try{
             //假设默认就是单例,细节暂且不考虑，先把主线拉通，//因为根据Class 才能确定一个类是否有实例
-            if(this.singletonObjects.containsKey(className)){
-                   instance=this.singletonObjects.get(className);
+            if(this.factoryBeanObjectCache.containsKey(className)){
+                   instance=this.factoryBeanObjectCache.get(className);
             }else {
                 Class<?> clazz = Class.forName(className);
                 instance = clazz.newInstance();
+
+                //读取配置信息，把配置信息的对象封装到MAAdvisedSupport类
+                MAAdvisedSupport config = instantionAopConfig(mABeanDefinition);
+                config.setTargetClass(clazz);
+                config.setTarget(instance);
+                //符合配置的切点规则的话，就把反射得到的对象重新设置为代理对象
+                //符合PointCut的规则的话，换为代理对象，pointCut=public .* com.spring.demo.service..*Service..*(.*)
+                if(config.pointCutMatch()) {
+                    instance = createProxy(config).getProxy();
+                }
+
+
                 //存两个名字
-                this.singletonObjects.put(className,instance);
-                this.singletonObjects.put(mABeanDefinition.getFactoryBeanName(),instance);
+                this.factoryBeanObjectCache.put(className,instance);
+                this.factoryBeanObjectCache.put(mABeanDefinition.getFactoryBeanName(),instance);
             }
         }catch (Exception e){
             e.printStackTrace();
         }
         return instance;
     }
+
+    /**
+     * 读取配置信息
+     * @param mABeanDefinition
+     * @return
+     */
+    private MAAdvisedSupport instantionAopConfig(MABeanDefinition mABeanDefinition) {
+        //把配置信息封装到MAAopConfig对象中
+        MAAopConfig config = new MAAopConfig();
+        config.setPointCut(this.reader.getConfig().getProperty("pointCut"));
+        config.setAspectClass(this.reader.getConfig().getProperty("aspectClass"));
+        config.setAspectBefore(this.reader.getConfig().getProperty("aspectBefore"));
+        config.setAspectAfter(this.reader.getConfig().getProperty("aspectAfter"));
+        config.setAspectAfterThrow(this.reader.getConfig().getProperty("aspectAfterThrow"));
+        config.setAspectAfterThrowingName(this.reader.getConfig().getProperty("aspectAfterThrowingName"));
+        return new MAAdvisedSupport(config);
+    }
+
+    /**
+     * 创建代理对象
+     * @param config
+     * @return
+     */
+    private MAAopProxy createProxy(MAAdvisedSupport config) {
+        //根据对象MAAdvisedSupport的class
+        Class<?> targetClass = config.getTargetClass();
+        if(targetClass.getInterfaces().length>0){//有接口，返回的就是jdk代理
+            return new MAJdkDynamicAopProxy(config);
+        }
+        return new MACglibAopProxy(config);//返回cglib的代理
+
+    }
+
 
 
     @Override

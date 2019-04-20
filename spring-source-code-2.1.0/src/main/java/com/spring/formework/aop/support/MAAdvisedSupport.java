@@ -17,7 +17,7 @@ public class MAAdvisedSupport {
 
     private Pattern pointCutClassPattern;//切入点的正则比配
 
-    private transient Map<Method, List<Object>> methodCache;//方法缓存
+    private transient Map<Method, List<Object>> methodCache;////方法对应的连接器链
 
     public MAAdvisedSupport(MAAopConfig config) {
         this.config = config;
@@ -29,6 +29,24 @@ public class MAAdvisedSupport {
 
     public Object getTarget(){
         return this.target;
+    }
+
+    public void setTargetClass(Class<?> targetClass) {
+        this.targetClass = targetClass;
+        //把符合规则的类，每个类封装为调用链，封装到map中
+        parse();
+    }
+
+    public void setTarget(Object target) {
+        this.target = target;
+    }
+
+    private void parse() {
+
+
+
+
+
     }
 
     /**
@@ -44,5 +62,14 @@ public class MAAdvisedSupport {
             Method m = targetClass.getMethod(method.getName(),method.getParameterTypes());
         }
         return null;
+    }
+
+
+    /**
+     * 判断类是否符合pointCut=public .* com.spring.demo.service..*Service..*(.*)
+     * @return
+     */
+    public boolean pointCutMatch() {
+        return pointCutClassPattern.matcher(this.targetClass.toString()).matches();
     }
 }
