@@ -13,10 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -202,8 +199,11 @@ public class MADispatcherServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             doDispatch(req, resp);
-        } catch (Exception e) {
+        } catch (Exception e){
+            //错误输出的信息
+            resp.getWriter().write("500 Exception,Details:\r\n" + Arrays.toString(e.getStackTrace()).replaceAll("\\[|\\]", "").replaceAll(",\\s", "\r\n"));
             e.printStackTrace();
+//            new GPModelAndView("500");
         }
     }
 
@@ -219,24 +219,51 @@ public class MADispatcherServlet extends HttpServlet {
             processDispatchResult(req,resp,new MAModelAndView("404"));
         }
 
+        //2.准备调用前的参数
+        MAHandlerAdapter ha = getHandlerAdapter(handler);
+
+        //3、真正的调用方法,返回ModelAndView存储了要穿页面上值，和页面模板的名称
+        MAModelAndView mv = ha.handle(req,resp,handler);
+
+        //输出到页面
+        //这一步才是真正的输出
+        processDispatchResult(req, resp, mv);
+
+    }
+
+    private MAHandlerAdapter getHandlerAdapter(MAHandlerMapping handler) {
+        if(this.handlerAdapters.isEmpty()){return null;}
+        MAHandlerAdapter ha = this.handlerAdapters.get(handler);
+        if(ha.supports(handler)){
+            return  ha;
+        }
+        return null;
     }
 
     /**
-     * 返回固定视图模板
+     * 返回固定视图模板(往页面)
      * @param req
      * @param resp
      * @param mv
      */
-    private void processDispatchResult(HttpServletRequest req, HttpServletResponse resp, MAModelAndView mv) {
+    private void processDispatchResult(HttpServletRequest req, HttpServletResponse resp, MAModelAndView mv) throws Exception {
         //把给我的ModleAndView变成一个HTML、OuputStream、json、freemark、veolcity
         //ContextType
         if(null == mv){return;}
 
+        //如果ModelAndView不为null，怎么办？
+        if(this.viewResolvers.isEmpty()){return;}
+
+        for (MAViewResolver viewResolver : this.viewResolvers) {
+            MAView view = viewResolver.resolveViewName(mv.getViewName(),null);
+            view.render(mv.getModel(),req,resp);
+            return;
+        }
 
     }
 
 
-    private MAHandlerMapping getHandler(HttpServletRequest req) {
+    private MAHandlerMapping getHandler(HttpServletRequest req) throws Exception{
         if(this.handlerMappings.isEmpty()){
             return null;
         }
@@ -247,6 +274,7 @@ public class MADispatcherServlet extends HttpServlet {
         //遍历handlerMappings
         for (MAHandlerMapping handler : this.handlerMappings) {
             Matcher matcher=handler.getPattern().matcher(url);
+            //如果没有匹配上继续下一个匹配
             if(!matcher.matches()){continue;}
             return  handler;
         }

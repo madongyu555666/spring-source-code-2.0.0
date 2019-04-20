@@ -13,6 +13,10 @@ public class MAModelAndView {
         this.model = model;
     }
 
+    public String getViewName() {
+        return viewName;
+    }
+
     /**
      * 得到map
      * @return
