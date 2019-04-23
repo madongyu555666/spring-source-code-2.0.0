@@ -80,6 +80,10 @@ public class MABeanDefinitionReader {
 
 
                 //接口注入
+                /**
+                 * beanClassName=com.spring.demo.service.impl.ModifyService
+                 * factoryBeanName=com.spring.demo.service.IModifyService
+                 */
                 Class<?>[] interfaces = beanClass.getInterfaces();
                 for (Class<?> i : interfaces) {
                     //如果是多个实现类，只能覆盖

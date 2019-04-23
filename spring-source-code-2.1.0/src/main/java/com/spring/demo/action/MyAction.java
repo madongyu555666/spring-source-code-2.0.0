@@ -35,6 +35,7 @@ public class MyAction {
 	public MAModelAndView query(HttpServletRequest request, HttpServletResponse response,
 								@MARequestParam("name") String name){
 		String result = queryService.query(name);
+
 		return out(response,result);
 	}
 	

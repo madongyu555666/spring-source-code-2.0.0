@@ -149,8 +149,6 @@ public class MAApplicationContext extends MADefaultListableBeanFactory implement
                 if(config.pointCutMatch()) {
                     instance = createProxy(config).getProxy();
                 }
-
-
                 //存两个名字
                 this.factoryBeanObjectCache.put(className,instance);
                 this.factoryBeanObjectCache.put(mABeanDefinition.getFactoryBeanName(),instance);

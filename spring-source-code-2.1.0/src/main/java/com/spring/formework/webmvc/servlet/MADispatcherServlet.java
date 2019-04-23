@@ -217,6 +217,7 @@ public class MADispatcherServlet extends HttpServlet {
         if(handler==null){
             //等于空就报个404的模板页面
             processDispatchResult(req,resp,new MAModelAndView("404"));
+            return;
         }
 
         //2.准备调用前的参数
@@ -254,11 +255,16 @@ public class MADispatcherServlet extends HttpServlet {
         //如果ModelAndView不为null，怎么办？
         if(this.viewResolvers.isEmpty()){return;}
 
-        for (MAViewResolver viewResolver : this.viewResolvers) {
-            MAView view = viewResolver.resolveViewName(mv.getViewName(),null);
-            view.render(mv.getModel(),req,resp);
-            return;
+        if(this.viewResolvers!=null){
+            for (MAViewResolver viewResolver : this.viewResolvers) {
+                MAView view = viewResolver.resolveViewName(mv.getViewName(),null);
+                if(view!=null){
+                    view.render(mv.getModel(),req,resp);
+                    return;
+                }
+            }
         }
+
 
     }
 
@@ -267,8 +273,8 @@ public class MADispatcherServlet extends HttpServlet {
         if(this.handlerMappings.isEmpty()){
             return null;
         }
-        String url=req.getContextPath();
-        String contextPath=req.getContextPath();
+        String url = req.getRequestURI();
+        String contextPath = req.getContextPath();
         //截取请求的url
         url = url.replace(contextPath,"").replaceAll("/+","/");
         //遍历handlerMappings
