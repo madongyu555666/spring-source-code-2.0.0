@@ -10,6 +10,8 @@
   <version>1.0-SNAPSHOT</version>
   <modules>
     <module>spring-source-code-2.1.0</module>
+      <module>spring-source-orm</module>
+    <module>mybatis-source</module>
   </modules>
 
   <name>spring-source-code-2.0.0</name>

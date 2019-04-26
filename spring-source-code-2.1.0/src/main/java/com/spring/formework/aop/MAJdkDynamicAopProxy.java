@@ -28,6 +28,11 @@ public class MAJdkDynamicAopProxy implements MAAopProxy, InvocationHandler {
         return getProxy(this.advised.getTargetClass().getClassLoader());
     }
 
+    /**
+     * 如果是代理的话，会得到代理的对象
+     * @param classLoader
+     * @return
+     */
     @Override
     public Object getProxy(ClassLoader classLoader) {
        return Proxy.newProxyInstance(classLoader,this.advised.getTargetClass().getInterfaces(),this);

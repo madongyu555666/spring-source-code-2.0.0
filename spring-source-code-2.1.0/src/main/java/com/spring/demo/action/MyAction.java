@@ -34,8 +34,7 @@ public class MyAction {
 	@MARequestMapping("/query.json")
 	public MAModelAndView query(HttpServletRequest request, HttpServletResponse response,
 								@MARequestParam("name") String name){
-		String result = queryService.query(name);
-
+		String result = queryService.query(name);//如果是代理对象的话，回去执行jdk或者cglib的代理
 		return out(response,result);
 	}
 	

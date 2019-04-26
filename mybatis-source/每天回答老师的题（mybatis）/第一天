@@ -1,0 +1,9 @@
+1、resultType（属性）和resultMap（标签引用）的区别？
+resultType：自动配置，对象的属性名必须和表的字段名对应起来，如果查询的字段和pojo的字段不一致，则需要使用resultMap将字段名和属性名对应起来进行封装将结果映射到pojo中
+resultMap：手动配置，resultMap可以实现将查询结果映射为复杂类型pojo的属性
+2、collection和association的区别？
+collection：用来映射一对多的关系
+association：用来映射一对一关系
+3、Statement和PreparedStatement的区别？
+Statement：用于执行静态 SQL 语句并返回它所生成结果的对象。
+PreparedStatement：PreparedStatement可以使用占位符，是预编译的。
