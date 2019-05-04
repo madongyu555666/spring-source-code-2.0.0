@@ -3,13 +3,8 @@
 
 
 2、总结：MyBatis里面用到了哪些设计模式？
-
-
-
-提交方式：
-
-时序图以图片形式上传到自己的git；
-
-问答题以MD形式上传到自己的git；
-
-在本页回答贴上自己的学号、git作业地址。
+1.装饰者模式：ExecutorWrapper
+2.代理模式：MapperProxyFactory
+3.责任链模式：InterceptorChain
+4.模板模式：BaseExecutor
+5.简单工厂模式：sqlSessionFactiory
