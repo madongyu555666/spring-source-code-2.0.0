@@ -13,11 +13,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @Author: qingshan
- * @Date: 2019/3/31 15:57
- * @Description: 咕泡学院，只为更好的你
- */
+
 public class BaseRowMapper<T> implements RowMapper<T> {
 
     private Class<?> targetClazz;

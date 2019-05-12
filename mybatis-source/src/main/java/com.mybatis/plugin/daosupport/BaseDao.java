@@ -9,9 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @Author: qingshan
- * @Date: 2019/3/9 14:55
- * @Description: 咕泡学院，只为更好的你
  *  通过继承SqlSessionDaoSupport 获得一个 SqlSessionTemplate
  */
 public  class BaseDao extends SqlSessionDaoSupport {
